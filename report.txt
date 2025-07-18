@@ -1,0 +1,85 @@
+Optimism Analysis Report
+==================================================
+
+THREAD 1: Tesla Stock Discussion
+----------------------------------------
+Overall Thread Optimism: 0.433/1.0
+Optimism Trend: -0.257 (Declining)
+Volatility: 0.121 (Low)
+Peak Optimism: 0.553
+INSIGHT: LOW optimism - Concerns or negativity present
+
+Most Optimistic Post (Score: 0.553):
+   'TSLA to the moon! Just read about their new 4680 battery breakthrough. This is absolutely game-changing tech that will r...'
+   Upvotes: 234 | Future Focus: 0.05 | Enthusiasm: 0.40
+
+Least Optimistic Post (Score: 0.267):
+   'Honestly I'm skeptical about these battery claims. Tesla has overpromised before (remember the Cybertruck timeline?). Th...'
+   Upvotes: 89 | VADER: 0.56
+
+
+THREAD 2: New Ramen Restaurant
+----------------------------------------
+Overall Thread Optimism: 0.443/1.0
+Optimism Trend: -1.000 (Declining)
+Volatility: 0.168 (Low)
+Peak Optimism: 0.612
+INSIGHT: LOW optimism - Concerns or negativity present
+
+Most Optimistic Post (Score: 0.612):
+   'OMG just went to the new ramen place downtown and I'm OBSESSED!! The tonkotsu broth is absolutely incredible - rich, cre...'
+   Upvotes: 156 | Future Focus: 0.03 | Enthusiasm: 1.00
+
+Least Optimistic Post (Score: 0.275):
+   'Eh, I went there yesterday and wasn't that impressed. The broth was decent but nothing special, and $18 for a bowl of ra...'
+   Upvotes: 67 | VADER: 0.71
+
+
+THREAD 3: Galaxy Phone Launch
+----------------------------------------
+Overall Thread Optimism: 0.283/1.0
+Optimism Trend: -1.000 (Declining)
+Volatility: 0.054 (Low)
+Peak Optimism: 0.337
+INSIGHT: LOW optimism - Concerns or negativity present
+
+Most Optimistic Post (Score: 0.337):
+   'HOLY SHIT the new Samsung Galaxy Ultra is absolutely INSANE!! Just got mine and the camera is legitimately mind-blowing....'
+   Upvotes: 445 | Future Focus: 0.00 | Enthusiasm: 1.00
+
+Least Optimistic Post (Score: 0.229):
+   'Idk man, seems like typical Samsung overhype to me. The specs look good on paper but real-world performance is what matt...'
+   Upvotes: 234 | VADER: 0.16
+
+
+THREAD 4: Local Coffee Shop
+----------------------------------------
+Overall Thread Optimism: 0.451/1.0
+Optimism Trend: -1.000 (Declining)
+Volatility: 0.153 (Low)
+Peak Optimism: 0.604
+INSIGHT: MODERATE optimism - Mixed but generally positive
+
+Most Optimistic Post (Score: 0.604):
+   'The new coffee shop on 5th Street is absolutely amazing! Their single-origin Ethiopian beans are incredible - so much co...'
+   Upvotes: 89 | Future Focus: 0.01 | Enthusiasm: 1.00
+
+Least Optimistic Post (Score: 0.299):
+   'Tried it yesterday and honestly wasn't blown away. Coffee was okay but nothing special, and $6 for a latte is pretty ste...'
+   Upvotes: 34 | VADER: 0.74
+
+
+CROSS-THREAD ANALYSIS
+==================================================
+Average Optimism Across All Threads: 0.403
+Average Trend Across All Threads: -0.814
+
+THREAD RANKINGS BY OPTIMISM:
+   1. Local Coffee Shop: 0.451
+   2. New Ramen Restaurant: 0.443
+   3. Tesla Stock Discussion: 0.433
+   4. Galaxy Phone Launch: 0.283
+
+MARKET RESEARCH INSIGHTS:
+
+Analysis complete. Processed 9 total posts across 4 discussions.
