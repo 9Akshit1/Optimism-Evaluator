@@ -8,6 +8,13 @@ from dataclasses import dataclass
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
+
+import math
+from collections import Counter, defaultdict
+from textstat import flesch_reading_ease, flesch_kincaid_grade
+import syllables
+from datetime import timezone
+
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -257,22 +264,548 @@ class OptimismAnalyzer:
             'roberta_neg': roberta_scores.get('negative', 0.33),
             'roberta_neu': roberta_scores.get('neutral', 0.34)
         }
+
+    def extract_creative_optimism_features(self, text: str, data: TextData, thread_data: List[TextData]) -> Dict[str, float]:
+        """
+        Extract truly creative and novel optimism indicators that go beyond traditional approaches
+        """
+        features = {}
+        
+        # 1. COGNITIVE LOAD ANALYSIS - Optimistic people think more complexly about positive futures
+        features.update(self._analyze_cognitive_complexity(text))
+        
+        # 2. TEMPORAL LINGUISTIC PATTERNS - How people structure time in language reveals optimism
+        features.update(self._analyze_temporal_linguistics(text))
+        
+        # 3. SOCIAL CONTAGION PATTERNS - How optimism spreads through conversation chains
+        features.update(self._analyze_social_contagion(data, thread_data))
+        
+        # 4. LINGUISTIC ENERGY SIGNATURE - Optimism has a unique "energy fingerprint" in language
+        features.update(self._analyze_linguistic_energy(text))
+        
+        # 5. SOLUTION-FOCUSED LANGUAGE - Optimists naturally frame problems as solvable
+        features.update(self._analyze_solution_framing(text))
+        
+        # 6. COLLECTIVE PRONOUN DYNAMICS - Optimists use "we/us" vs "I/me" differently
+        features.update(self._analyze_pronoun_dynamics(text))
+        
+        # 7. SEMANTIC BRIDGING - Optimists connect seemingly unrelated positive concepts
+        features.update(self._analyze_semantic_bridging(text))
+        
+        # 8. TEMPORAL RESPONSE CLUSTERING - Optimistic discussions create unique timing patterns
+        features.update(self._analyze_response_clustering(data, thread_data))
+        
+        return features
+
+    def _analyze_cognitive_complexity(self, text: str) -> Dict[str, float]:
+        """
+        NOVEL INSIGHT: Optimistic people engage in more complex thinking about positive outcomes.
+        They use more subordinate clauses, conditional statements, and layered reasoning.
+        """
+        # Count complex sentence structures
+        subordinate_markers = ['because', 'since', 'although', 'while', 'whereas', 'if', 'unless', 'when', 'where']
+        conditional_markers = ['if', 'unless', 'provided', 'assuming', 'suppose', 'imagine']
+        causal_chains = ['therefore', 'thus', 'consequently', 'as a result', 'leading to', 'which means']
+        
+        words = text.lower().split()
+        total_words = len(words)
+        
+        if total_words == 0:
+            return {'cognitive_complexity': 0, 'conditional_thinking': 0, 'causal_reasoning': 0}
+        
+        # Measure subordinate clause density
+        subordinate_count = sum(1 for marker in subordinate_markers if marker in text.lower())
+        subordinate_density = subordinate_count / max(1, total_words / 10)  # Per 10 words
+        
+        # Measure conditional thinking (optimists explore "what if" scenarios)
+        conditional_count = sum(1 for marker in conditional_markers if marker in text.lower())
+        conditional_density = conditional_count / max(1, total_words / 10)
+        
+        # Measure causal reasoning chains
+        causal_count = sum(1 for marker in causal_chains if marker in text.lower())
+        causal_density = causal_count / max(1, total_words / 10)
+        
+        # Complex punctuation patterns (optimists use more varied punctuation)
+        punctuation_variety = len(set(char for char in text if char in '!?;:()[]{}"-')) / max(1, len(text) / 100)
+        
+        # Reading complexity (optimists write more sophisticatedly about positive topics)
+        try:
+            reading_ease = flesch_reading_ease(text)
+            complexity_score = max(0, (100 - reading_ease) / 100)  # Higher complexity = lower ease
+        except:
+            complexity_score = 0.5
+        
+        overall_complexity = (subordinate_density + conditional_density + causal_density + 
+                            punctuation_variety + complexity_score) / 5
+        
+        return {
+            'cognitive_complexity': min(1.0, overall_complexity),
+            'conditional_thinking': min(1.0, conditional_density),
+            'causal_reasoning': min(1.0, causal_density)
+        }
+
+    def _analyze_temporal_linguistics(self, text: str) -> Dict[str, float]:
+        """
+        NOVEL INSIGHT: Optimists have unique patterns in how they structure time in language.
+        They create "temporal bridges" connecting present actions to future outcomes.
+        """
+        # Temporal bridging phrases (connecting present to future)
+        bridge_phrases = [
+            'will lead to', 'going to result in', 'setting up for', 'paving the way',
+            'building toward', 'working toward', 'moving toward', 'progressing to',
+            'evolving into', 'developing into', 'growing into', 'becoming'
+        ]
+        
+        # Future-conditional constructions (optimistic scenario building)
+        future_conditionals = [
+            'when we', 'once we', 'after we', 'as soon as', 'by the time',
+            'will be able to', 'going to be', 'will have', 'will see'
+        ]
+        
+        # Progressive momentum indicators
+        momentum_words = [
+            'accelerating', 'gaining', 'building', 'growing', 'expanding',
+            'increasing', 'improving', 'advancing', 'progressing', 'developing'
+        ]
+        
+        text_lower = text.lower()
+        words = text_lower.split()
+        total_words = len(words)
+        
+        if total_words == 0:
+            return {'temporal_bridging': 0, 'future_conditionals': 0, 'momentum_language': 0}
+        
+        # Count temporal bridges
+        bridge_count = sum(1 for phrase in bridge_phrases if phrase in text_lower)
+        temporal_bridging = bridge_count / max(1, total_words / 20)
+        
+        # Count future conditionals
+        conditional_count = sum(1 for phrase in future_conditionals if phrase in text_lower)
+        future_conditionals_score = conditional_count / max(1, total_words / 20)
+        
+        # Count momentum language
+        momentum_count = sum(1 for word in momentum_words if word in words)
+        momentum_score = momentum_count / max(1, total_words / 10)
+        
+        # Temporal sequence complexity (optimists describe multi-step futures)
+        sequence_markers = ['first', 'then', 'next', 'after that', 'finally', 'eventually']
+        sequence_count = sum(1 for marker in sequence_markers if marker in text_lower)
+        sequence_complexity = sequence_count / max(1, total_words / 15)
+        
+        return {
+            'temporal_bridging': min(1.0, temporal_bridging),
+            'future_conditionals': min(1.0, future_conditionals_score),
+            'momentum_language': min(1.0, momentum_score),
+            'sequence_complexity': min(1.0, sequence_complexity)
+        }
+
+    def _analyze_social_contagion(self, data: TextData, thread_data: List[TextData]) -> Dict[str, float]:
+        """
+        NOVEL INSIGHT: Optimism spreads through social networks in measurable patterns.
+        Optimistic posts create "contagion cascades" that influence subsequent responses.
+        """
+        if len(thread_data) < 3:
+            return {'contagion_coefficient': 0.5, 'cascade_trigger': 0.5, 'momentum_shift': 0.5}
+        
+        # Find position of current post in thread
+        sorted_thread = sorted(thread_data, key=lambda x: x.timestamp)
+        try:
+            current_index = next(i for i, post in enumerate(sorted_thread) if post.timestamp == data.timestamp)
+        except:
+            current_index = len(sorted_thread) // 2
+        
+        # Analyze sentiment momentum before and after this post
+        if current_index > 0 and current_index < len(sorted_thread) - 1:
+            # Get sentiment of posts before and after
+            before_posts = sorted_thread[max(0, current_index-2):current_index]
+            after_posts = sorted_thread[current_index+1:min(len(sorted_thread), current_index+3)]
+            
+            # Quick sentiment scoring for surrounding posts
+            before_sentiment = np.mean([self._quick_sentiment_score(post.text) for post in before_posts])
+            after_sentiment = np.mean([self._quick_sentiment_score(post.text) for post in after_posts])
+            current_sentiment = self._quick_sentiment_score(data.text)
+            
+            # Contagion coefficient: how much this post influences subsequent posts
+            contagion_coefficient = max(0, min(1, (after_sentiment - before_sentiment) / 2 + 0.5))
+            
+            # Cascade trigger: does this post start a positive cascade?
+            cascade_trigger = 1.0 if (current_sentiment > 0.6 and after_sentiment > before_sentiment + 0.2) else 0.0
+            
+            # Momentum shift: does this post change the conversation direction?
+            momentum_shift = abs(after_sentiment - before_sentiment) if current_sentiment > 0.5 else 0
+        else:
+            contagion_coefficient = 0.5
+            cascade_trigger = 0.5
+            momentum_shift = 0.5
+        
+        # Response time analysis - optimistic posts get faster responses
+        if current_index < len(sorted_thread) - 1:
+            response_time = (sorted_thread[current_index + 1].timestamp - data.timestamp).total_seconds()
+            quick_response_score = max(0, min(1, 1 - (response_time / 3600)))  # 1 hour max
+        else:
+            quick_response_score = 0.5
+        
+        return {
+            'contagion_coefficient': contagion_coefficient,
+            'cascade_trigger': cascade_trigger,
+            'momentum_shift': min(1.0, momentum_shift),
+            'response_magnetism': quick_response_score
+        }
+
+    def _quick_sentiment_score(self, text: str) -> float:
+        """Quick sentiment scoring for contagion analysis"""
+        positive_words = ['good', 'great', 'amazing', 'awesome', 'excellent', 'love', 'best', 'incredible']
+        negative_words = ['bad', 'terrible', 'awful', 'hate', 'worst', 'horrible', 'disappointing']
+        
+        words = text.lower().split()
+        pos_count = sum(1 for word in words if word in positive_words)
+        neg_count = sum(1 for word in words if word in negative_words)
+        
+        if pos_count + neg_count == 0:
+            return 0.5
+        
+        return pos_count / (pos_count + neg_count)
+
+    def _analyze_linguistic_energy(self, text: str) -> Dict[str, float]:
+        """
+        NOVEL INSIGHT: Optimism has a unique "energy signature" in language patterns.
+        This includes rhythm, syllable patterns, and phonetic characteristics.
+        """
+        words = text.split()
+        if not words:
+            return {'rhythmic_energy': 0, 'syllabic_momentum': 0, 'phonetic_brightness': 0}
+        
+        # Rhythmic energy: variation in word and sentence lengths
+        word_lengths = [len(word) for word in words]
+        sentences = [s.strip() for s in text.split('.') if s.strip()]
+        sentence_lengths = [len(s.split()) for s in sentences if s]
+        
+        if len(word_lengths) > 1:
+            word_rhythm = np.std(word_lengths) / np.mean(word_lengths) if np.mean(word_lengths) > 0 else 0
+        else:
+            word_rhythm = 0
+        
+        if len(sentence_lengths) > 1:
+            sentence_rhythm = np.std(sentence_lengths) / np.mean(sentence_lengths) if np.mean(sentence_lengths) > 0 else 0
+        else:
+            sentence_rhythm = 0
+        
+        rhythmic_energy = (word_rhythm + sentence_rhythm) / 2
+        
+        # Syllabic momentum: optimists use more dynamic syllable patterns
+        try:
+            total_syllables = sum(syllables.estimate(word) for word in words if word.isalpha())
+            avg_syllables = total_syllables / len(words) if words else 0
+            syllabic_momentum = min(1.0, avg_syllables / 3)  # Normalize around 3 syllables average
+        except:
+            syllabic_momentum = 0.5
+        
+        # Phonetic brightness: certain sounds are associated with optimism
+        bright_sounds = ['ee', 'ay', 'ai', 'ey', 'ie', 'y']  # High, bright vowel sounds
+        dark_sounds = ['oo', 'ou', 'ow', 'au', 'aw']  # Low, dark vowel sounds
+        
+        text_lower = text.lower()
+        bright_count = sum(text_lower.count(sound) for sound in bright_sounds)
+        dark_count = sum(text_lower.count(sound) for sound in dark_sounds)
+        
+        if bright_count + dark_count > 0:
+            phonetic_brightness = bright_count / (bright_count + dark_count)
+        else:
+            phonetic_brightness = 0.5
+        
+        return {
+            'rhythmic_energy': min(1.0, rhythmic_energy),
+            'syllabic_momentum': syllabic_momentum,
+            'phonetic_brightness': phonetic_brightness
+        }
+
+    def _analyze_solution_framing(self, text: str) -> Dict[str, float]:
+        """
+        NOVEL INSIGHT: Optimists naturally frame challenges as solvable problems.
+        They use "solution architecture" language patterns.
+        """
+        # Solution-oriented language patterns
+        solution_starters = [
+            'we can', 'we could', 'we should', 'let\'s', 'what if we',
+            'one way to', 'another approach', 'alternative', 'solution',
+            'fix', 'solve', 'address', 'tackle', 'handle', 'deal with'
+        ]
+        
+        # Problem-to-solution bridges
+        bridge_patterns = [
+            'but we can', 'however we could', 'still possible', 'way around',
+            'work through', 'figure out', 'find a way', 'make it work'
+        ]
+        
+        # Collaborative solution language
+        collaborative_words = [
+            'together', 'team up', 'combine', 'join forces', 'work with',
+            'pool resources', 'share', 'contribute', 'help each other'
+        ]
+        
+        # Innovation/creativity indicators
+        innovation_words = [
+            'innovate', 'creative', 'think outside', 'new approach', 'fresh perspective',
+            'breakthrough', 'game changer', 'revolutionary', 'disruptive'
+        ]
+        
+        text_lower = text.lower()
+        words = text_lower.split()
+        total_words = len(words)
+        
+        if total_words == 0:
+            return {'solution_orientation': 0, 'collaborative_framing': 0, 'innovation_mindset': 0}
+        
+        # Count solution-oriented language
+        solution_count = sum(1 for pattern in solution_starters + bridge_patterns if pattern in text_lower)
+        solution_orientation = solution_count / max(1, total_words / 15)
+        
+        # Count collaborative language
+        collab_count = sum(1 for word in collaborative_words if word in text_lower)
+        collaborative_framing = collab_count / max(1, total_words / 15)
+        
+        # Count innovation language
+        innovation_count = sum(1 for word in innovation_words if word in text_lower)
+        innovation_mindset = innovation_count / max(1, total_words / 15)
+        
+        # Problem acknowledgment + solution pattern
+        problem_words = ['problem', 'issue', 'challenge', 'difficulty', 'obstacle']
+        solution_words = ['solution', 'answer', 'fix', 'resolve', 'overcome']
+        
+        has_problem = any(word in text_lower for word in problem_words)
+        has_solution = any(word in text_lower for word in solution_words)
+        problem_solution_pattern = 1.0 if (has_problem and has_solution) else 0.5
+        
+        return {
+            'solution_orientation': min(1.0, solution_orientation),
+            'collaborative_framing': min(1.0, collaborative_framing),
+            'innovation_mindset': min(1.0, innovation_mindset),
+            'problem_solution_pattern': problem_solution_pattern
+        }
+
+    def _analyze_pronoun_dynamics(self, text: str) -> Dict[str, float]:
+        """
+        NOVEL INSIGHT: Optimists use pronouns differently - more "we/us" when discussing positive outcomes,
+        more "I/me" when taking responsibility for action.
+        """
+        import re
+        
+        # Extract all pronouns with context
+        collective_pronouns = ['we', 'us', 'our', 'ours', 'ourselves']
+        individual_pronouns = ['i', 'me', 'my', 'mine', 'myself']
+        
+        words = text.lower().split()
+        sentences = [s.strip() for s in re.split(r'[.!?]', text) if s.strip()]
+        
+        # Count pronouns in positive vs negative contexts
+        positive_context_words = ['can', 'will', 'great', 'amazing', 'success', 'win', 'achieve', 'accomplish']
+        negative_context_words = ['can\'t', 'won\'t', 'bad', 'fail', 'problem', 'issue', 'difficult']
+        
+        collective_in_positive = 0
+        individual_in_positive = 0
+        total_collective = 0
+        total_individual = 0
+        
+        for sentence in sentences:
+            sentence_words = sentence.lower().split()
+            has_positive = any(word in sentence_words for word in positive_context_words)
+            has_negative = any(word in sentence_words for word in negative_context_words)
+            
+            for word in sentence_words:
+                if word in collective_pronouns:
+                    total_collective += 1
+                    if has_positive and not has_negative:
+                        collective_in_positive += 1
+                elif word in individual_pronouns:
+                    total_individual += 1
+                    if has_positive and not has_negative:
+                        individual_in_positive += 1
+        
+        # Calculate ratios
+        if total_collective > 0:
+            collective_optimism_ratio = collective_in_positive / total_collective
+        else:
+            collective_optimism_ratio = 0.5
+        
+        if total_individual > 0:
+            individual_optimism_ratio = individual_in_positive / total_individual
+        else:
+            individual_optimism_ratio = 0.5
+        
+        # Collective vs individual balance in positive contexts
+        total_positive_pronouns = collective_in_positive + individual_in_positive
+        if total_positive_pronouns > 0:
+            collective_positive_ratio = collective_in_positive / total_positive_pronouns
+        else:
+            collective_positive_ratio = 0.5
+        
+        return {
+            'collective_optimism_ratio': collective_optimism_ratio,
+            'individual_optimism_ratio': individual_optimism_ratio,
+            'collective_positive_balance': collective_positive_ratio
+        }
+
+    def _analyze_semantic_bridging(self, text: str) -> Dict[str, float]:
+        """
+        NOVEL INSIGHT: Optimists create unexpected connections between positive concepts,
+        building "semantic bridges" that reveal creative, hopeful thinking.
+        """
+        # Define semantic domains
+        domains = {
+            'technology': ['tech', 'digital', 'innovation', 'AI', 'future', 'smart', 'advanced'],
+            'growth': ['grow', 'expand', 'increase', 'develop', 'improve', 'progress', 'evolve'],
+            'community': ['together', 'community', 'team', 'collective', 'shared', 'united'],
+            'success': ['success', 'achieve', 'accomplish', 'win', 'triumph', 'excel', 'thrive'],
+            'creativity': ['creative', 'innovative', 'original', 'unique', 'artistic', 'imaginative'],
+            'opportunity': ['opportunity', 'chance', 'potential', 'possibility', 'opening', 'prospect']
+        }
+        
+        words = text.lower().split()
+        
+        # Find which domains are present
+        active_domains = []
+        for domain, domain_words in domains.items():
+            if any(word in words for word in domain_words):
+                active_domains.append(domain)
+        
+        # Calculate semantic bridging score
+        num_domains = len(active_domains)
+        if num_domains <= 1:
+            bridging_score = 0
+        else:
+            # More domains connected = higher bridging
+            bridging_score = min(1.0, (num_domains - 1) / 4)  # Normalize to 0-1
+        
+        # Connection strength: look for connecting words between domains
+        connection_words = ['and', 'plus', 'with', 'through', 'via', 'by', 'using', 'combining']
+        connection_count = sum(1 for word in connection_words if word in words)
+        connection_strength = min(1.0, connection_count / max(1, len(words) / 20))
+        
+        # Metaphorical language (optimists use more metaphors)
+        metaphor_indicators = ['like', 'as', 'similar to', 'reminds me of', 'just like', 'kind of like']
+        metaphor_count = sum(1 for indicator in metaphor_indicators if indicator in text.lower())
+        metaphorical_richness = min(1.0, metaphor_count / max(1, len(words) / 25))
+        
+        return {
+            'semantic_bridging': bridging_score,
+            'connection_strength': connection_strength,
+            'metaphorical_richness': metaphorical_richness
+        }
+
+    def _analyze_response_clustering(self, data: TextData, thread_data: List[TextData]) -> Dict[str, float]:
+        """
+        NOVEL INSIGHT: Optimistic discussions create unique temporal clustering patterns.
+        Optimism creates "gravity wells" that attract more responses.
+        """
+        if len(thread_data) < 5:
+            return {'temporal_gravity': 0.5, 'cluster_density': 0.5, 'optimism_magnetism': 0.5}
+        
+        sorted_thread = sorted(thread_data, key=lambda x: x.timestamp)
+        
+        try:
+            current_index = next(i for i, post in enumerate(sorted_thread) if post.timestamp == data.timestamp)
+        except:
+            return {'temporal_gravity': 0.5, 'cluster_density': 0.5, 'optimism_magnetism': 0.5}
+        
+        # Analyze clustering around this post
+        window_size = 2  # Look 2 posts before and after
+        start_idx = max(0, current_index - window_size)
+        end_idx = min(len(sorted_thread), current_index + window_size + 1)
+        
+        window_posts = sorted_thread[start_idx:end_idx]
+        
+        if len(window_posts) < 3:
+            return {'temporal_gravity': 0.5, 'cluster_density': 0.5, 'optimism_magnetism': 0.5}
+        
+        # Calculate time gaps between posts in window
+        time_gaps = []
+        for i in range(len(window_posts) - 1):
+            gap = (window_posts[i + 1].timestamp - window_posts[i].timestamp).total_seconds()
+            time_gaps.append(gap)
+        
+        # Temporal gravity: how much this post attracts nearby responses
+        avg_gap = np.mean(time_gaps) if time_gaps else 3600
+        temporal_gravity = max(0, min(1, 1 - (avg_gap / 7200)))  # 2 hours max
+        
+        # Cluster density: how compressed the responses are
+        if len(time_gaps) > 1:
+            gap_std = np.std(time_gaps)
+            gap_mean = np.mean(time_gaps)
+            if gap_mean > 0:
+                cluster_density = max(0, min(1, 1 - (gap_std / gap_mean)))
+            else:
+                cluster_density = 0.5
+        else:
+            cluster_density = 0.5
+        
+        # Optimism magnetism: do positive posts attract more responses?
+        current_sentiment = self._quick_sentiment_score(data.text)
+        response_count = len([p for p in window_posts if p.timestamp > data.timestamp])
+        max_possible_responses = min(3, len(sorted_thread) - current_index - 1)
+        
+        if max_possible_responses > 0:
+            response_ratio = response_count / max_possible_responses
+            optimism_magnetism = response_ratio * current_sentiment
+        else:
+            optimism_magnetism = 0.5
+        
+        return {
+            'temporal_gravity': temporal_gravity,
+            'cluster_density': cluster_density,
+            'optimism_magnetism': min(1.0, optimism_magnetism)
+        }
     
     def calc_optimism_score(self, features: Dict[str, float]) -> float:
         weights = {
-            'vader_pos': 0.15,
-            'vader_comp': 0.10,
-            'roberta_pos': 0.15,
-            'response_speed': 0.10,
-            'time_momentum': 0.10,
-            'peak_align': 0.05,
-            'future_score': 0.08,
-            'action_density': 0.07,
-            'certainty': 0.05,
-            'enthusiasm': 0.05,
-            'engagement': 0.04,
-            'thread_pos': 0.03,
+            # Traditional sentiment features (30% total weight)
+            'vader_positive': 0.10,
+            'vader_compound': 0.08,
+            'roberta_positive': 0.12,
+            
+            # Temporal features (20% total weight)
+            'response_speed_score': 0.06,
+            'temporal_momentum': 0.08,
+            'peak_activity_alignment': 0.06,
+            
+            # Linguistic features (20% total weight)
+            'future_orientation_score': 0.05,
+            'action_word_density': 0.05,
+            'certainty_score': 0.04,
+            'enthusiasm_markers': 0.06,
+            
+            # Behavioral features (8% total weight)
+            'engagement_quality': 0.03,
+            'thread_position_score': 0.02,
             'upvote_ratio': 0.03,
+            
+            # CREATIVE OPTIMISM FEATURES (22% total weight)
+            # Cognitive complexity
+            'cognitive_complexity': 0.04,
+            'conditional_thinking': 0.03,
+            'causal_reasoning': 0.02,
+            
+            # Temporal linguistics
+            'temporal_bridging': 0.03,
+            'momentum_language': 0.02,
+            'sequence_complexity': 0.02,
+            
+            # Social contagion
+            'contagion_coefficient': 0.03,
+            'response_magnetism': 0.02,
+            
+            # Linguistic energy
+            'rhythmic_energy': 0.02,
+            'phonetic_brightness': 0.01,
+            
+            # Solution framing
+            'solution_orientation': 0.03,
+            'innovation_mindset': 0.02,
+            
+            # Pronoun dynamics
+            'collective_positive_balance': 0.02,
+            
+            # Semantic bridging
+            'semantic_bridging': 0.02,
         }
         
         optimism_score = 0
@@ -296,12 +829,15 @@ class OptimismAnalyzer:
             sentiment_features = self.analyze_text_sentiment(data.text)
             linguistic_features = self.extract_linguistic_features(data.text)
             behavioral_features = self.extract_behavioral_features(data, thread_data)
+
+            creative_features = self.extract_creative_optimism_features(data.text, data, thread_data)
             
             all_features = {
                 **sentiment_features,
                 **time_features,
                 **linguistic_features,
-                **behavioral_features
+                **behavioral_features,
+                **creative_features
             }
             
             optimism_score = self.calc_optimism_score(all_features)
